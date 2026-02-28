@@ -37,7 +37,9 @@ app.add_middleware(
 )
 
 # Ensure static directory exists
-os.makedirs("static", exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
 
 class SolveRequest(BaseModel):
     expression: str = Field(..., max_length=500) # Prevent massive payloads
@@ -46,13 +48,13 @@ class SolveRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
-    index_path = os.path.join("static", "index.html")
+    index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
     return "<html><body><h1>index.html not found in static folder</h1></body></html>"
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # --- AUTH & ADMIN ROUTES ---
 @app.post("/register", response_model=schemas.User)
