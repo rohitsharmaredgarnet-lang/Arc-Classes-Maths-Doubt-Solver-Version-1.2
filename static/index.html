@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Classes Doubt Solver</title>
+    <!-- Modern Typography from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Algebra & Equation Solving Library -->
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Solve.js"></script>
+
+    <style>
+        :root {
+            /* Sleek Dark Mode Color Palette */
+            --bg-dark: hsl(225, 40%, 6%);
+            --pane-left-bg: hsl(220, 30%, 10%);
+            --pane-right-bg: hsl(225, 35%, 12%);
+
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+
+            --text-primary: hsl(0, 0%, 98%);
+            --text-secondary: hsl(220, 10%, 60%);
+            --text-math: hsl(200, 80%, 80%);
+
+            --accent-primary: hsl(260, 100%, 65%);
+            --accent-secondary: hsl(340, 100%, 60%);
+            --accent-operator: hsl(190, 90%, 55%);
+
+            --error-color: hsl(0, 80%, 60%);
+            --success-color: hsl(150, 70%, 50%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        /* Full Screen Split Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Left Pane: Input Workspace --- */
+        .workspace {
+            flex: 1;
+            background: var(--pane-left-bg);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .header {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-option {
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 16px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-option.active {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Dynamic Variables Form */
+        .variables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 0 30px 15px 30px;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .variable-group {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .variable-label {
+            padding: 8px 12px;
+            background: var(--pane-right-bg);
+            color: var(--accent-operator);
+            font-family: 'Fira Code', monospace;
+            font-weight: 500;
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .variable-input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            width: 100px;
+            font-family: 'Fira Code', monospace;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .variable-input::placeholder {
+            color: var(--text-secondary);
+            font-style: italic;
+            opacity: 0.5;
+        }
+
+        .input-area {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .input-area::before {
+            content: "Enter Equation\n(e.g., 5 + 3 * sin(30) or sqrt(144))\n\nSupports: sin, cos, tan, log, ln, sqrt, pi, e";
+            white-space: pre-wrap;
+            position: absolute;
+            top: 35px;
+            left: 30px;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        #mathInput {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.6rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        /* Hide the absolute before element when the textarea has content */
+        #mathInput.has-value+.input-area::before {
+            display: none;
+        }
+
+        .input-footer {
+            padding: 15px 30px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+
+        /* --- Right Pane: Solution Steps --- */
+        .solution-pane {
+            flex: 1;
+            background: var(--pane-right-bg);
+            position: relative;
+            overflow-y: auto;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Ambient glow in right pane */
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-primary) 0%, transparent 50%);
+            opacity: 0.05;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .solution-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .status-banner {
+            margin-bottom: 30px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .status-banner.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-banner.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .status-banner.error {
+            border-left: 4px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .status-banner.typing {
+            border-left: 4px solid var(--accent-secondary);
+            color: var(--text-secondary);
+        }
+
+        /* Step List Styling */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .step-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-header {
+            font-size: 0.9rem;
+            color: var(--accent-operator);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .step-body {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        /* Syntax highlighting within steps */
+        .math-hl {
+            font-family: 'Fira Code', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: var(--text-math);
+            display: inline-block;
+            margin: 2px 0;
+        }
+
+        .math-final {
+            font-family: 'Fira Code', monospace;
+            background: linear-gradient(90deg, rgba(80, 255, 150, 0.1), transparent);
+            border-left: 3px solid var(--success-color);
+            padding: 4px 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 1.6rem;
+            color: var(--success-color);
+            font-weight: 500;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-secondary);
+            text-align: center;
+            opacity: 0.5;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Formula Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--pane-left-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            color: var(--accent-operator);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--error-color);
+        }
+
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chapter-list {
+            width: 35%;
+            border-right: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .chapter-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .chapter-item:hover {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .chapter-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+        }
+
+        .formula-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .formula-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .formula-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-operator);
+        }
+
+        .formula-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .formula-card .expr {
+            font-family: 'Fira Code', monospace;
+            color: var(--text-math);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Left Pane: Input -->
+        <div class="workspace">
+            <div class="header">
+                <div class="title">Arc Classes Doubt Solver</div>
+                <div style="display: flex; gap: 15px;">
+                    <button id="formulasBtn" class="toggle-container"
+                        style="background: transparent; box-shadow: none; padding: 4px 12px; cursor: pointer; color: var(--text-primary); transition: all 0.2s;">
+                        <span style="font-weight:500;">📚 Formula Library</span>
+                    </button>
+                    <div class="toggle-container" id="angleToggle">
+                        <div class="toggle-option active" data-mode="deg">Deg</div>
+                        <div class="toggle-option" data-mode="rad">Rad</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Variables Form (Hidden by default) -->
+            <div class="variables-container" id="variablesContainer" style="display: none;">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="input-area">
+                <textarea id="mathInput" spellcheck="false"></textarea>
+                <!-- Pseudo-placeholder is managed by CSS sibling selector hack if empty -->
+                <div id="placeholderGlow" style="display: none;"></div>
+            </div>
+
+            <div class="input-footer">
+                <span>Currently supports standard arithmetic & basic trig/logs. Formulas coming soon.</span>
+                <span>Results update in real-time.</span>
+            </div>
+        </div>
+
+        <!-- Right Pane: Steps & Solution -->
+        <div class="solution-pane" id="solutionPane">
+            <div class="glow"></div>
+
+            <div class="solution-content">
+                <div class="status-banner" id="statusBanner">
+                    <!-- Status injected via JS -->
+                </div>
+
+                <div class="steps-container" id="stepsContainer">
+                    <!-- Initial Empty State -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">⚛️</div>
+                        <h2>Waiting for Input</h2>
+                        <p>Type an equation on the left to see the step-by-step breakdown.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formula Modal Overlay -->
+            <div class="modal-overlay" id="formulaModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Class 10 Formula Library</h2>
+                        <button class="close-btn" id="closeModalBtn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="chapter-list" id="chapterList"></div>
+                        <div class="formula-list" id="formulaList">
+                            <div class="empty-state" style="height: 100%;">
+                                <p>Select a chapter to view formulas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Core Math Parser & Evaluator ---
+        class MathEngine {
+            constructor() {
+                this.angleMode = 'deg';
+                this.steps = [];
+            }
+
+            setAngleMode(mode) {
+                this.angleMode = mode;
+            }
+
+            async evaluate(expression) {
+                this.steps = [];
+                let cleanExpr = expression.trim();
+                if (!cleanExpr) return null;
+
+                try {
+                    const response = await fetch('/solve', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            expression: cleanExpr,
+                            angle_mode: this.angleMode,
+                            calc_mode: cleanExpr.includes("=") ? "solve" : "eval"
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        return { success: false, error: "Network Error", details: `Server responded with status ${response.status}.` };
+                    }
+                    
+                    const data = await response.json();
+                    return data;
+
+                } catch (err) {
+                    return { success: false, error: "Connection Error", details: err.message };
+                }
+            }
+        }
+
+
+        // --- UI Controller ---
+        const mathInput = document.getElementById('mathInput');
+        const stepsContainer = document.getElementById('stepsContainer');
+        const statusBanner = document.getElementById('statusBanner');
+        const emptyState = document.getElementById('emptyState');
+        const angleToggleOpts = document.querySelectorAll('.toggle-option');
+
+        const engine = new MathEngine();
+        let typingTimer;
+
+        // Custom Placeholder Logic for Textarea
+        function checkInputEmpty() {
+            if (mathInput.value) {
+                mathInput.classList.add('has-value');
+            } else {
+                mathInput.classList.remove('has-value');
+            }
+        }
+        mathInput.addEventListener('input', checkInputEmpty);
+        checkInputEmpty(); // Init
+
+        // Mode Toggles
+        angleToggleOpts.forEach(opt => {
+            opt.addEventListener('click', () => {
+                angleToggleOpts.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                engine.setAngleMode(opt.dataset.mode);
+                processInput(); // Re-evaluate whenever mode changes
+            });
+        });
+
+        // Input Handling
+        mathInput.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+
+            const val = mathInput.value.trim();
+            if (!val) {
+                showEmptyState(false);
+                return;
+            }
+
+            statusBanner.className = 'status-banner visible typing';
+            statusBanner.innerHTML = '⚡ <span>Evaluating...</span>';
+
+            // Re-evaluate 500ms after they stop typing
+            typingTimer = setTimeout(() => {
+                processInput();
+            }, 500);
+        });
+
+        // Prevent default enter behavior, process immediately
+        mathInput.addEventListener('keydown', (e) => {
+            // Uncomment the line below if you DON'T want the user to be able to hit 'enter' to drop a newline
+            // e.preventDefault(); 
+            if (e.key === 'Enter') {
+                clearTimeout(typingTimer);
+                processInput();
+            }
+        });
+
+        // --- Formula Library Logic ---
+        const formulasBtn = document.getElementById('formulasBtn');
+        const formulaModal = document.getElementById('formulaModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const chapterList = document.getElementById('chapterList');
+        const formulaList = document.getElementById('formulaList');
+        const variablesContainer = document.getElementById('variablesContainer');
+
+        let activeFormulaTemplate = ""; // Stores the raw string with variables
+
+        const libraryData = [
+            {
+                chapter: "Goods and Services Tax",
+                formulas: [
+                    { name: "Discount Amount", expr: "Discount = MarkedPrice * (DiscountPercentage / 100)" },
+                    { name: "Selling Price", expr: "SellingPrice = MarkedPrice - Discount" },
+                    { name: "GST Amount", expr: "GSTAmount=(MarkedPrice-Discount+ServiceCharge)*(GSTRate/100)" }
+                ]
+            },
+            {
+                chapter: "Banking",
+                formulas: [
+                    { name: "Recurring Deposit - Interest", expr: "I=P*n*(n+1)/24*(r/100)" },
+                    { name: "Recurring Deposit - Maturity Value", expr: "MV=P*n+I" }
+                ]
+            },
+            {
+                chapter: "Linear Equations",
+                formulas: [
+                    { name: "One Variable", expr: "a*x+b=0" },
+                    { name: "Two Variables", expr: "a*x+b*y+c=0" },
+                    { name: "Three Variables", expr: "a*x+b*y+c*z+d=0" }
+                ]
+            },
+            {
+                chapter: "Quadratic Equation",
+                formulas: [
+                    { name: "Standard Form", expr: "a*x^2+b*x+c=0" },
+                    { name: "Quadratic Formula (+)", expr: "x=(-b+sqrt(b^2-4*a*c))/(2*a)" },
+                    { name: "Quadratic Formula (-)", expr: "x=(-b-sqrt(b^2-4*a*c))/(2*a)" }
+                ]
+            },
+            {
+                chapter: "Algebraic Formulas",
+                formulas: [
+                    { name: "(a+b)²", expr: "(a+b)^2=a^2+b^2+2*a*b" },
+                    { name: "(a-b)²", expr: "(a-b)^2=a^2+b^2-2*a*b" },
+                    { name: "a² - b²", expr: "a^2-b^2=(a+b)*(a-b)" },
+                    { name: "(x+a)(x+b)", expr: "(x+a)*(x+b)=x^2+(a+b)*x+a*b" },
+                    { name: "(x+a)(x-b)", expr: "(x+a)*(x-b)=x^2+(a-b)*x-a*b" },
+                    { name: "(x-a)(x+b)", expr: "(x-a)*(x+b)=x^2+(b-a)*x-a*b" },
+                    { name: "(x-a)(x-b)", expr: "(x-a)*(x-b)=x^2-(a+b)*x+a*b" },
+                    { name: "(a+b)³", expr: "(a+b)^3=a^3+b^3+3*a*b*(a+b)" },
+                    { name: "(a-b)³", expr: "(a-b)^3=a^3-b^3-3*a*b*(a-b)" },
+                    { name: "(x+y+z)²", expr: "(x+y+z)^2=x^2+y^2+z^2+2*x*y+2*y*z+2*x*z" },
+                    { name: "(x+y-z)²", expr: "(x+y-z)^2=x^2+y^2+z^2+2*x*y-2*y*z-2*x*z" },
+                    { name: "(x-y+z)²", expr: "(x-y+z)^2=x^2+y^2+z^2-2*x*y-2*y*z+2*x*z" },
+                    { name: "(x-y-z)²", expr: "(x-y-z)^2=x^2+y^2+z^2-2*x*y+2*y*z-2*x*z" },
+                    { name: "x³+y³+z³-3xyz", expr: "x^3+y^3+z^3-3*x*y*z=(x+y+z)*(x^2+y^2+z^2-x*y-y*z-x*z)" },
+                    { name: "x²+y²", expr: "x^2+y^2=0.5*((x+y)^2+(x-y)^2)" },
+                    { name: "(x+a)(x+b)(x+c)", expr: "(x+a)*(x+b)*(x+c)=x^3+(a+b+c)*x^2+(a*b+b*c+c*a)*x+a*b*c" },
+                    { name: "x³+y³", expr: "x^3+y^3=(x+y)*(x^2-x*y+y^2)" },
+                    { name: "x³-y³", expr: "x^3-y^3=(x-y)*(x^2+x*y+y^2)" }
+                ]
+            },
+            {
+                chapter: "Basic Formulas for Powers",
+                formulas: [
+                    { name: "Product Rule", expr: "p^m*p^n=p^(m+n)" },
+                    { name: "Quotient Rule", expr: "p^m/p^n=p^(m-n)" },
+                    { name: "Power Rule", expr: "(p^m)^n=p^(m*n)" },
+                    { name: "Negative Exponent", expr: "p^(-m)=1/(p^m)" },
+                    { name: "Zero Power", expr: "p^0=1" },
+                    { name: "First Power", expr: "p^1=p" }
+                ]
+            },
+            {
+                chapter: "Arithmetic Progression (AP)",
+                formulas: [
+                    { name: "nth Term", expr: "Term=a+(n-1)*d" },
+                    { name: "Sum of first n terms", expr: "Sum=(n/2)*(2*a+(n-1)*d)" }
+                ]
+            },
+            {
+                chapter: "Trigonometry",
+                formulas: [
+                    { name: "sin(90° - θ)", expr: "sin(90-theta)=cos(theta)" },
+                    { name: "cos(90° - θ)", expr: "cos(90-theta)=sin(theta)" },
+                    { name: "tan(90° - θ)", expr: "tan(90-theta)=cot(theta)" },
+                    { name: "cot(90° - θ)", expr: "cot(90-theta)=tan(theta)" },
+                    { name: "sec(90° - θ)", expr: "sec(90-theta)=csc(theta)" },
+                    { name: "csc(90° - θ)", expr: "csc(90-theta)=sec(theta)" },
+                    { name: "sin²θ + cos²θ", expr: "sin(theta)^2+cos(theta)^2=1" },
+                    { name: "sec²θ", expr: "sec(theta)^2=1+tan(theta)^2" },
+                    { name: "csc²θ", expr: "csc(theta)^2=1+cot(theta)^2" }
+                ]
+            },
+            {
+                chapter: "Circles",
+                formulas: [
+                    { name: "Circumference", expr: "Circumference=2*pi*r" },
+                    { name: "Area", expr: "Area=pi*r^2" },
+                    { name: "Area of Sector", expr: "SectorArea=(theta/360)*pi*r^2" },
+                    { name: "Length of Arc", expr: "ArcLength=(theta/360)*2*pi*r" }
+                ]
+            },
+            {
+                chapter: "Surface Area and Volumes",
+                formulas: [
+                    { name: "Sphere - Surface Area", expr: "SurfaceArea=4*pi*r^2" },
+                    { name: "Sphere - Volume", expr: "Volume=(4/3)*pi*r^3" },
+                    { name: "Cylinder - Curved Surface Area", expr: "CurvedSurfaceArea=2*pi*r*h" },
+                    { name: "Cylinder - Total Surface Area", expr: "TotalSurfaceArea=2*pi*r*h+2*pi*r^2" },
+                    { name: "Cylinder - Volume", expr: "Volume=pi*r^2*h" },
+                    { name: "Cone - Slant Height", expr: "l=sqrt(r^2+h^2)" },
+                    { name: "Cone - Curved Surface Area", expr: "CurvedSurfaceArea=pi*r*l" },
+                    { name: "Cone - Total Surface Area", expr: "TotalSurfaceArea=pi*r*(l+r)" },
+                    { name: "Cone - Volume", expr: "Volume=(1/3)*pi*r^2*h" },
+                    { name: "Cuboid - Perimeter", expr: "Perimeter=4*(l+b+h)" },
+                    { name: "Cuboid - Longest Diagonal", expr: "DiagonalLength=sqrt(l^2+b^2+h^2)" },
+                    { name: "Cuboid - Total Surface Area", expr: "TotalSurfaceArea=2*(l*b+b*h+l*h)" },
+                    { name: "Cuboid - Volume", expr: "Volume=l*b*h" }
+                ]
+            },
+            {
+                chapter: "Shares and Dividends",
+                formulas: [
+                    { name: "Dividend per Share", expr: "DividendPerShare=NominalValue*(DividendPercentage/100)" },
+                    { name: "Number of Shares", expr: "NumberOfShares=Investment/MarketValue" },
+                    { name: "Annual Income", expr: "AnnualIncome=NumberOfShares*DividendPerShare" },
+                    { name: "Rate of Return (%)", expr: "RateOfReturn=(AnnualIncome/Investment)*100" }
+                ]
+            },
+            {
+                chapter: "Coordinate Geometry - Reflection",
+                formulas: [
+                    { name: "Reflection in x = a", expr: "X_prime = 2*a - X" },
+                    { name: "Reflection in y = a", expr: "Y_prime = 2*a - Y" }
+                ]
+            }
+        ];
+
+        function renderChapters() {
+            chapterList.innerHTML = '';
+            libraryData.forEach((ch, idx) => {
+                const el = document.createElement('div');
+                el.className = 'chapter-item';
+                el.innerText = ch.chapter;
+                el.onclick = () => renderFormulas(idx, el);
+                chapterList.appendChild(el);
+            });
+        }
+
+        function renderFormulas(idx, chapterEl) {
+            document.querySelectorAll('.chapter-item').forEach(el => el.classList.remove('active'));
+            chapterEl.classList.add('active');
+
+            formulaList.innerHTML = '';
+            libraryData[idx].formulas.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'formula-card';
+                card.innerHTML = `<h4>${f.name}</h4><div class="expr">${f.expr}</div>`;
+                card.onclick = () => {
+                    loadFormulaToWorkspace(f.expr);
+                    closeModal();
+                };
+                formulaList.appendChild(card);
+            });
+        }
+
+        function loadFormulaToWorkspace(expr) {
+            activeFormulaTemplate = expr;
+            mathInput.value = expr;
+
+            // Render Dynamic Input Fields for the Variables
+            renderVariableInputs(expr);
+
+            checkInputEmpty();
+            mathInput.focus();
+
+            // Trigger initial evaluation visually without auto-solving
+            mathInput.dispatchEvent(new Event('input'));
+        }
+
+        function renderVariableInputs(expr) {
+            let parsed;
+            try {
+                parsed = nerdamer(expr);
+            } catch (e) {
+                variablesContainer.style.display = 'none';
+                return;
+            }
+
+            let vars = parsed.variables();
+
+            if (vars.length === 0) {
+                variablesContainer.style.display = 'none';
+                return;
+            }
+
+            variablesContainer.innerHTML = '';
+
+            vars.forEach(v => {
+                const group = document.createElement('div');
+                group.className = 'variable-group';
+
+                const label = document.createElement('div');
+                label.className = 'variable-label';
+                label.innerText = v + " =";
+
+                const input = document.createElement('input');
+                input.className = 'variable-input';
+                input.type = 'text';
+                input.placeholder = '?';
+                input.dataset.varName = v;
+
+                // When user types in a mini-box, update the big string
+                input.addEventListener('input', updateMainExpressionFromVariables);
+
+                group.appendChild(label);
+                group.appendChild(input);
+                variablesContainer.appendChild(group);
+            });
+
+            variablesContainer.style.display = 'flex';
+        }
+
+        function updateMainExpressionFromVariables() {
+            let workingExpr = activeFormulaTemplate;
+            const inputs = document.querySelectorAll('.variable-input');
+
+            // For robust replacing without replacing substrings (e.g. 'P' in 'Price'), we use regex word boundaries
+            inputs.forEach(input => {
+                const vName = input.dataset.varName;
+                const vVal = input.value.trim();
+
+                if (vVal) {
+                    // Create regex to match the exact variable name as a full word
+                    // We escape vName just in case, though it should be letters
+                    const regex = new RegExp(`\\b${vName}\\b`, 'g');
+                    workingExpr = workingExpr.replace(regex, vVal);
+                }
+            });
+
+            mathInput.value = workingExpr;
+
+            // Trigger the main evaluation cycle
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                processInput();
+            }, 600);
+        }
+
+        function openModal() {
+            formulaModal.classList.add('active');
+            renderChapters();
+        }
+        function closeModal() {
+            formulaModal.classList.remove('active');
+        }
+
+        formulasBtn.onclick = openModal;
+        closeModalBtn.onclick = closeModal;
+        window.addEventListener('click', (e) => {
+            if (e.target === formulaModal) closeModal();
+        });
+
+        async function processInput() {
+            const val = mathInput.value.trim();
+            if (!val) return;
+
+            // Remove newline characters before passing to eval to prevent syntax errors
+            const safeVal = val.replace(/\n/g, ' ');
+            const result = await engine.evaluate(safeVal);
+
+            if (result.success) {
+                statusBanner.className = 'status-banner visible success';
+                statusBanner.innerHTML = `✅ <span>Successfully evaluated expression.</span>`;
+                renderSteps(result.steps);
+            } else {
+                statusBanner.className = 'status-banner visible error';
+                // Only show main error in banner, details in body
+                statusBanner.innerHTML = `❌ <span>${result.error}</span>`;
+                showEmptyState(true, result.details);
+            }
+        }
+
+        function renderSteps(steps) {
+            stepsContainer.innerHTML = ''; // Clear board
+
+            steps.forEach((step, index) => {
+                const card = document.createElement('div');
+                card.className = 'step-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                card.innerHTML = `
+                    <div class="step-header">Step ${index + 1}: ${step.title}</div>
+                    <div class="step-body">${step.body}</div>
+                `;
+
+                stepsContainer.appendChild(card);
+            });
+
+            // Auto scroll to latest steps if container gets full
+            const pane = document.getElementById('solutionPane');
+            setTimeout(() => {
+                pane.scrollTo({ top: pane.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function showEmptyState(isError = false, errorMsg = "") {
+            stepsContainer.innerHTML = '';
+
+            const stateDiv = document.createElement('div');
+            stateDiv.className = 'empty-state';
+
+            if (isError) {
+                stateDiv.innerHTML = `
+                    <div class="empty-icon" style="color: var(--error-color);">⚠️</div>
+                    <h2>Calculation Error</h2>
+                    <p style="color: var(--error-color);">${errorMsg}</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Check your parentheses and functions (e.g. <code>sin(30)</code> instead of <code>sin 30</code>).</p>
+                `;
+            } else {
+                statusBanner.className = 'status-banner'; // hide banner entirely when truly empty
+                stateDiv.innerHTML = `
+                    <div class="empty-icon">⚛️</div>
+                    <h2>Waiting for Input</h2>
+                    <p>Type an equation on the left to see the step-by-step breakdown.</p>
+                `;
+            }
+
+            stepsContainer.appendChild(stateDiv);
+        }
+
+        // Focus user input text area immediately when loaded
+        window.onload = () => mathInput.focus();
+
+    </script>
+</body>
+
+</html>
