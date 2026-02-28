@@ -60,7 +60,6 @@
             display: flex;
             height: 100vh;
             width: 100vw;
-            flex-direction: row;
         }
 
         /* --- Left Pane: Input Workspace --- */
@@ -172,7 +171,7 @@
         }
 
         .input-area::before {
-            content: "Enter Equation to Solve\n(e.g., 2x + 5 = 15)\n\nSupports: sin, cos, tan, log, ln, sqrt, pi, e";
+            content: "Enter Equation\n(e.g., 5 + 3 * sin(30) or sqrt(144))\n\nSupports: sin, cos, tan, log, ln, sqrt, pi, e";
             white-space: pre-wrap;
             position: absolute;
             top: 35px;
@@ -184,10 +183,6 @@
             font-family: 'Fira Code', monospace;
             font-size: 1.2rem;
             line-height: 1.6;
-        }
-
-        .input-area[data-mode="eval"]::before {
-            content: "Enter Expression to Evaluate\n(e.g., 5 + 3 * sin(30) or sqrt(144))\n\nSupports: sin, cos, tan, log, ln, sqrt, pi, e";
         }
 
         #mathInput {
@@ -385,70 +380,6 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
-            }
-
-            .workspace {
-                flex: none;
-                height: 50vh;
-                border-right: none;
-                border-bottom: 1px solid var(--glass-border);
-            }
-
-            .solution-pane {
-                flex: none;
-                height: 50vh;
-                padding: 20px;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 10px;
-                padding: 15px 20px;
-                align-items: flex-start;
-            }
-
-            .header>div {
-                width: 100%;
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-
-            .title {
-                font-size: 1.2rem;
-            }
-
-            .input-area {
-                padding: 20px;
-            }
-
-            .input-area::before {
-                top: 25px;
-                left: 20px;
-                font-size: 1rem;
-            }
-
-            #mathInput {
-                font-size: 1.4rem;
-            }
-
-            .input-footer {
-                padding: 10px 20px;
-            }
-
-            .modal-content {
-                width: 95%;
-                height: 80vh;
-            }
-
-            .chapter-list {
-                width: 40%;
-            }
-        }
-
         /* Formula Modal */
         .modal-overlay {
             position: fixed;
@@ -599,28 +530,11 @@
         <div class="workspace">
             <div class="header">
                 <div class="title">Arc Classes Doubt Solver</div>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <!-- Auth / Admin Toggle -->
-                    <button id="authBtn" class="toggle-container"
-                        style="background: rgba(255, 255, 255, 0.05); padding: 4px 12px; cursor: pointer; color: var(--text-primary); transition: all 0.2s; border: 1px solid var(--glass-border);">
-                        <span style="font-weight:500;" id="authBtnText">👤 Login</span>
-                    </button>
-                    <button id="adminBtn" class="toggle-container"
-                        style="display: none; background: rgba(255, 50, 50, 0.2); border-color: rgba(255, 50, 50, 0.5); padding: 4px 12px; cursor: pointer; color: white; transition: all 0.2s;">
-                        <span style="font-weight:500;">🛠️ Admin</span>
-                    </button>
-
+                <div style="display: flex; gap: 15px;">
                     <button id="formulasBtn" class="toggle-container"
                         style="background: transparent; box-shadow: none; padding: 4px 12px; cursor: pointer; color: var(--text-primary); transition: all 0.2s;">
-                        <span style="font-weight:500;">📚 Formulas</span>
+                        <span style="font-weight:500;">📚 Formula Library</span>
                     </button>
-
-                    <!-- Calculation Mode Toggle -->
-                    <div class="toggle-container" id="calcModeToggle">
-                        <div class="toggle-option active" data-mode="solve">Solve [x]</div>
-                        <div class="toggle-option" data-mode="eval">Eval [=]</div>
-                    </div>
-
                     <div class="toggle-container" id="angleToggle">
                         <div class="toggle-option active" data-mode="deg">Deg</div>
                         <div class="toggle-option" data-mode="rad">Rad</div>
@@ -681,105 +595,49 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Auth Modal Overlay -->
-            <div class="modal-overlay" id="authModal">
-                <div class="modal-content" style="max-width: 400px; height: auto;">
-                    <div class="modal-header">
-                        <h2 id="authTitle">Login or Register</h2>
-                        <button class="close-btn"
-                            onclick="document.getElementById('authModal').classList.remove('active');">&times;</button>
-                    </div>
-                    <div class="modal-body" style="flex-direction: column; padding: 20px; text-align: left;">
-                        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Accounts are
-                            optional, but help us stop bots.</p>
-                        <input type="text" id="authUsername" placeholder="Username"
-                            style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: white; font-family: 'Fira Code', monospace; font-size: 1rem;">
-                        <input type="password" id="authPassword" placeholder="Password"
-                            style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); color: white; font-family: 'Fira Code', monospace; font-size: 1rem;">
-
-                        <div id="authErrorMsg"
-                            style="color: var(--error-color); margin-bottom: 10px; font-size: 0.9rem; display: none;">
-                        </div>
-
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="handleAuth('login')"
-                                style="flex: 1; padding: 10px; border-radius: 6px; border: none; background: var(--accent-primary); color: var(--bg-dark); font-weight: bold; cursor: pointer; font-size: 1.1rem;">Login</button>
-                            <button onclick="handleAuth('register')"
-                                style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--accent-primary); background: transparent; color: var(--accent-primary); font-weight: bold; cursor: pointer; font-size: 1.1rem;">Register</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Modal Overlay -->
-            <div class="modal-overlay" id="adminModal">
-                <div class="modal-content" style="max-width: 600px;">
-                    <div class="modal-header">
-                        <h2>🛠️ Admin Panel</h2>
-                        <button class="close-btn"
-                            onclick="document.getElementById('adminModal').classList.remove('active');">&times;</button>
-                    </div>
-                    <div class="modal-body" style="flex-direction: column; padding: 20px; overflow-y: auto;">
-                        <div id="adminUserList" style="display: flex; flex-direction: column; gap: 10px;">
-                            <!-- Users injected here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
     </div>
 
     <script>
-        // --- Configuration ---
-        // Change this empty string to your actual Render App URL once you deploy the backend
-        // Example: const API_BASE_URL = 'https://arc-classes-backend.onrender.com';
-        // When running locally on your PC, it defaults to the local server
-        const DEV_URL = 'http://127.0.0.1:8000';
-        const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:' ? DEV_URL : 'https://arc-classes-maths-doubt-solver-version-1.onrender.com';
-
         // --- Core Math Parser & Evaluator ---
         class MathEngine {
             constructor() {
                 this.angleMode = 'deg';
-                this.calcMode = 'solve'; // solve or eval
+                this.steps = [];
             }
 
             setAngleMode(mode) {
                 this.angleMode = mode;
             }
 
-            setCalcMode(mode) {
-                this.calcMode = mode;
-            }
-
             async evaluate(expression) {
-                try {
-                    const headers = { 'Content-Type': 'application/json' };
-                    // Attach Authorization if logged in
-                    const token = localStorage.getItem('arc_token');
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
+                this.steps = [];
+                let cleanExpr = expression.trim();
+                if (!cleanExpr) return null;
 
-                    const response = await fetch(API_BASE_URL + '/solve', {
+                try {
+                    const response = await fetch('/solve', {
                         method: 'POST',
-                        headers: headers,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify({
-                            expression: expression,
+                            expression: cleanExpr,
                             angle_mode: this.angleMode,
-                            calc_mode: this.calcMode
+                            calc_mode: cleanExpr.includes("=") ? "solve" : "eval"
                         })
                     });
-
+                    
                     if (!response.ok) {
-                        return { success: false, error: "Server Error", details: `Failed with status ${response.status}` };
+                        return { success: false, error: "Network Error", details: `Server responded with status ${response.status}.` };
                     }
+                    
+                    const data = await response.json();
+                    return data;
 
-                    return await response.json();
                 } catch (err) {
-                    return { success: false, error: "Network Error", details: "Could not connect to the solver backend." };
+                    return { success: false, error: "Connection Error", details: err.message };
                 }
             }
         }
@@ -787,12 +645,10 @@
 
         // --- UI Controller ---
         const mathInput = document.getElementById('mathInput');
-        const inputArea = document.querySelector('.input-area');
         const stepsContainer = document.getElementById('stepsContainer');
         const statusBanner = document.getElementById('statusBanner');
         const emptyState = document.getElementById('emptyState');
-        const angleToggleOpts = document.querySelectorAll('#angleToggle .toggle-option');
-        const calcModeToggleOpts = document.querySelectorAll('#calcModeToggle .toggle-option');
+        const angleToggleOpts = document.querySelectorAll('.toggle-option');
 
         const engine = new MathEngine();
         let typingTimer;
@@ -814,17 +670,6 @@
                 angleToggleOpts.forEach(o => o.classList.remove('active'));
                 opt.classList.add('active');
                 engine.setAngleMode(opt.dataset.mode);
-                processInput(); // Re-evaluate whenever mode changes
-            });
-        });
-
-        calcModeToggleOpts.forEach(opt => {
-            opt.addEventListener('click', () => {
-                calcModeToggleOpts.forEach(o => o.classList.remove('active'));
-                opt.classList.add('active');
-                const mode = opt.dataset.mode;
-                engine.setCalcMode(mode);
-                inputArea.setAttribute('data-mode', mode);
                 processInput(); // Re-evaluate whenever mode changes
             });
         });
@@ -1131,11 +976,6 @@
 
             // Remove newline characters before passing to eval to prevent syntax errors
             const safeVal = val.replace(/\n/g, ' ');
-
-            // Show loading status
-            statusBanner.className = 'status-banner visible typing';
-            statusBanner.innerHTML = '⚡ <span>Evaluating on server...</span>';
-
             const result = await engine.evaluate(safeVal);
 
             if (result.success) {
@@ -1184,7 +1024,7 @@
                     <div class="empty-icon" style="color: var(--error-color);">⚠️</div>
                     <h2>Calculation Error</h2>
                     <p style="color: var(--error-color);">${errorMsg}</p>
-                    <p style="margin-top: 10px; font-size: 0.9rem;">Check your parentheses, functions, and ensure you are in the correct mode (Solve vs Eval).</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">Check your parentheses and functions (e.g. <code>sin(30)</code> instead of <code>sin 30</code>).</p>
                 `;
             } else {
                 statusBanner.className = 'status-banner'; // hide banner entirely when truly empty
@@ -1198,162 +1038,8 @@
             stepsContainer.appendChild(stateDiv);
         }
 
-        // --- Auth & Admin Logic ---
-        const authBtn = document.getElementById('authBtn');
-        const authBtnText = document.getElementById('authBtnText');
-        const adminBtn = document.getElementById('adminBtn');
-        const authModal = document.getElementById('authModal');
-        const adminModal = document.getElementById('adminModal');
-
-        // Check authentication state on load
-        async function checkAuthState() {
-            const token = localStorage.getItem('arc_token');
-            if (!token) {
-                authBtnText.innerText = '👤 Login';
-                adminBtn.style.display = 'none';
-                return;
-            }
-
-            try {
-                const res = await fetch(API_BASE_URL + '/users/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const user = await res.json();
-                    authBtnText.innerText = `👤 ${user.username} (Logout)`;
-                    if (user.is_admin) {
-                        adminBtn.style.display = 'block';
-                    } else {
-                        adminBtn.style.display = 'none';
-                    }
-                } else {
-                    localStorage.removeItem('arc_token');
-                    authBtnText.innerText = '👤 Login';
-                    adminBtn.style.display = 'none';
-                }
-            } catch (e) {
-                console.error("Auth check failed");
-            }
-        }
-
-        authBtn.onclick = () => {
-            const token = localStorage.getItem('arc_token');
-            if (token) {
-                // Logout
-                localStorage.removeItem('arc_token');
-                checkAuthState();
-            } else {
-                // Open login modal
-                document.getElementById('authErrorMsg').style.display = 'none';
-                document.getElementById('authUsername').value = "";
-                document.getElementById('authPassword').value = "";
-                authModal.classList.add('active');
-            }
-        };
-
-        async function handleAuth(action) {
-            const u = document.getElementById('authUsername').value.trim();
-            const p = document.getElementById('authPassword').value;
-            const errDiv = document.getElementById('authErrorMsg');
-
-            if (!u || !p) {
-                errDiv.innerText = "Please enter username and password.";
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            errDiv.style.display = 'none';
-
-            try {
-                if (action === 'register') {
-                    const res = await fetch(API_BASE_URL + '/register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: u, password: p })
-                    });
-                    if (!res.ok) throw new Error((await res.json()).detail || "Registration failed");
-                    // Assuming success, fall through to login to get token
-                }
-
-                // Login (fetch token)
-                const formData = new URLSearchParams();
-                formData.append('username', u);
-                formData.append('password', p);
-
-                const tokenRes = await fetch(API_BASE_URL + '/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData
-                });
-
-                if (!tokenRes.ok) throw new Error((await tokenRes.json()).detail || "Login failed");
-                const tokenData = await tokenRes.json();
-
-                localStorage.setItem('arc_token', tokenData.access_token);
-                authModal.classList.remove('active');
-
-                // Refresh UI
-                checkAuthState();
-            } catch (err) {
-                errDiv.innerText = err.message;
-                errDiv.style.display = 'block';
-            }
-        }
-
-        adminBtn.onclick = async () => {
-            adminModal.classList.add('active');
-            await loadAdminUsers();
-        };
-
-        async function loadAdminUsers() {
-            const userList = document.getElementById('adminUserList');
-            userList.innerHTML = '<p style="color:white; font-family: monospace;">Loading...</p>';
-
-            const token = localStorage.getItem('arc_token');
-            const res = await fetch(API_BASE_URL + '/admin/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                const users = await res.json();
-                userList.innerHTML = '';
-                users.forEach(u => {
-                    const div = document.createElement('div');
-                    div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--glass-border);";
-                    div.innerHTML = `
-                        <div style="color: white; font-family: 'Fira Code', monospace; font-size: 1.1rem;">
-                            <strong>${u.username}</strong> ${u.is_admin ? '<span style="color:var(--accent-operator); font-size: 0.9rem;">(Admin)</span>' : ''}
-                        </div>
-                        <button onclick="toggleBan(${u.id})" style="padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; ${u.is_banned ? 'background: var(--success-color); color: var(--bg-dark);' : 'background: var(--error-color); color: white;'}">
-                            ${u.is_banned ? 'Undo Ban' : 'Ban User'}
-                        </button>
-                    `;
-                    userList.appendChild(div);
-                });
-            } else {
-                userList.innerHTML = '<p style="color:var(--error-color);">Failed to load users. Are you an Admin?</p>';
-            }
-        }
-
-        // Must attach to window to be accessible from inline HTML onclick inside dynamically created elements
-        window.toggleBan = async function (userId) {
-            const token = localStorage.getItem('arc_token');
-            try {
-                await fetch(API_BASE_URL + `/admin/ban/${userId}`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                await loadAdminUsers(); // Refresh
-            } catch (e) {
-                console.error("Ban failed", e);
-            }
-        }
-
         // Focus user input text area immediately when loaded
-        window.onload = () => {
-            mathInput.focus();
-            checkAuthState();
-        };
+        window.onload = () => mathInput.focus();
 
     </script>
 </body>
